@@ -9,6 +9,21 @@ use App\Http\Controllers\Controller;
 
 class IndexController extends Controller
 {
+  protected function togroup( $tasks ){
+    $arr = [];
+
+    foreach($tasks as $task){
+      $qid = $task->query_qid;
+
+      if( ! isset( $arr[$qid] ) )
+        $arr[$qid] = [];
+
+      $arr[$qid] []= $task->story;
+    }
+
+    ksort($arr);
+    return $arr;
+  }
     public function student(Request $req, $id){
       $user = \App\User::where('sid', $id )->first();
 
@@ -18,8 +33,21 @@ class IndexController extends Controller
           'sid'   => $id,
         ]);
       }else{
+        $tasks = \App\PoolResult::where('assignee_id', $user->id)
+            ->orderBy('query_qid', 'asc')
+            ->get();
+
+        $tasks = $this->togroup( $tasks );
+
+        $queries = [];
+        foreach( $tasks as $qid => $_ ){
+          $queries[$qid] = \App\Query::where('query_id', $qid)->get();
+        }
+
         return view('student', [
-          'user' => $user
+          'user' => $user,
+          'tasks' => $tasks,
+          'queries' => $queries
         ]);
       }
     }
