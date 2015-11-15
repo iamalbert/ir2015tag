@@ -18,9 +18,8 @@ class CreateStoriesTable extends Migration
 
             $table->integer('story_id');
 
-            $table->string('ori_name', 100);
+            //$table->string('ori_name', 100);
             $table->string('date', 100);
-            $table->string('agency', 100)->default('');
             $table->string('title', 100);
             $table->longText('text');
         });
