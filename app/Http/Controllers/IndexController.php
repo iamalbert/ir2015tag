@@ -86,6 +86,9 @@ class IndexController extends Controller
 
         return view('student', [
           'progress' => $progress,
+          'percentage' => $progress['total'] != 0 ?
+            $progress['finished'] * 100/ $progress['total'] : 100
+          ,
           'is_finished' => $progress['total'] == $progress['finished'],
           'msg'  => $this->msg,
           'user' => $user,

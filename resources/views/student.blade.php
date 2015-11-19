@@ -54,13 +54,14 @@
   <input type="hidden" name="_token" value="{{ csrf_token() }}" />
 
   <div class="ui progress indicating {{ $is_finished ? "success" : "warning" }}">
-    <div class="bar" style="width: {{ (int)($progress['finished']*100 / $progress['total']) }}%;">
+    <div class="bar" style="width: {{ $percentage }}%;">
       <div class="progress"></div>
     </div>
-    <div class="label"> Progress: {{ $progress['finished']}} / {{$progress['total']}} </div>
+    <div class="label"> Progress: {{$progress['finished']}} / {{$progress['total']}} </div>
   </div>
+
   <h1 class='header'>{{ $user->sid }}</h1>
-  <div> {{ $msg or 'aaa' }} </div>
+  <div> {{ $msg or '' }} </div>
   
   @foreach( $tasks as $qid => $task )
   <div class="ui divider"></div>
