@@ -18,12 +18,40 @@ class IndexController extends Controller
       if( ! isset( $arr[$qid] ) )
         $arr[$qid] = [];
 
-      $arr[$qid] []= $task->story;
+      $arr[$qid] []= $task;
     }
 
     ksort($arr);
     return $arr;
   }
+
+  protected $msg = "";
+
+  public function save( Request $req, $id ){
+  
+    $results = $req->input('result');
+
+    foreach( $results as $result_id => $tag ){
+
+
+      $r = \App\PoolResult::where('id',$result_id)->first();
+
+      if( $r && $r->get_user_sid() == $id ){
+
+        $tag = (int) $tag;
+
+        if( $tag > 0 ) $tag = 1;
+        else if ( $tag < 0 ) $tag = -1;
+        else $tag = 0;
+
+        $r->label = $tag;
+        $r->save();
+      }
+    }
+
+    return $this->student($req, $id);
+  }
+  
     public function student(Request $req, $id){
       $user = \App\User::where('sid', $id )->first();
 
@@ -37,14 +65,29 @@ class IndexController extends Controller
             ->orderBy('query_qid', 'asc')
             ->get();
 
-        $tasks = $this->togroup( $tasks );
-
-        $queries = [];
-        foreach( $tasks as $qid => $_ ){
-          $queries[$qid] = \App\Query::where('query_id', $qid)->get();
+        $progress = [ 'total' => 0, 'finished' => 0 ];
+        $progress['total'] = $tasks->count();
+        foreach( $tasks as $r ){
+          if( $r->label != "0" ) $progress['finished']++;
         }
 
+
+        $tasks = $this->togroup( $tasks );
+
+
+        $queries = [];
+
+
+        foreach( $tasks as $qid => $_ ){
+          $ret = \App\Query::where('query_id', $qid)->get();
+          $queries[$qid] = $ret;
+
+                 }
+
         return view('student', [
+          'progress' => $progress,
+          'is_finished' => $progress['total'] == $progress['finished'],
+          'msg'  => $this->msg,
           'user' => $user,
           'tasks' => $tasks,
           'queries' => $queries

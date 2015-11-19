@@ -14,4 +14,6 @@
 
 
 Route::get('/', 'IndexController@index');
-Route::get('/{id}', 'IndexController@student');
+
+Route::any('/{id}/{qid?}', 'IndexController@student');
+Route::post('/{id}/{qid?}', 'IndexController@save');
