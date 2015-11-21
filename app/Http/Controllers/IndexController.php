@@ -31,22 +31,26 @@ class IndexController extends Controller
   
     $results = $req->input('result');
 
-    foreach( $results as $result_id => $tag ){
+    if( is_array($results) ){
+
+      foreach( $results as $result_id => $tag ){
 
 
-      $r = \App\PoolResult::where('id',$result_id)->first();
+        $r = \App\PoolResult::where('id',$result_id)->first();
 
-      if( $r && $r->get_user_sid() == $id ){
+        if( $r && $r->get_user_sid() == $id ){
 
-        $tag = (int) $tag;
+          $tag = (int) $tag;
 
-        if( $tag > 0 ) $tag = 1;
-        else if ( $tag < 0 ) $tag = -1;
-        else $tag = 0;
+          if( $tag > 0 ) $tag = 1;
+          else if ( $tag < 0 ) $tag = -1;
+          else $tag = 0;
 
-        $r->label = $tag;
-        $r->save();
+          $r->label = $tag;
+          $r->save();
+        }
       }
+
     }
 
     return $this->student($req, $id);

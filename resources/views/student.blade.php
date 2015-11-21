@@ -7,6 +7,7 @@
   <style>
     body {
       padding-top: 20px;
+      position: relative;
     }
     #menu {
       margin-bottom: 20px;
@@ -31,16 +32,39 @@
     }
     .tag-cb.green { border-color: green; color: green; }
     .tag-cb.red   { border-color: red  ; color: red  ; }
-    .tag-radio + .tag-cb { background: white; cursor: pointer;}
+    .tag-radio + .tag-cb { background: white; cursor: pointer; font-size:1.2em;}
     .tag-radio:checked + .tag-cb.green { background-color: green; color: white; }
     .tag-radio:checked + .tag-cb.red   { background-color: red  ; color: white; }
 
     #submit-button { text-align: center; }
+    .query-titles, .stories {
+      width: 44%;
+      margin: 0;
+    }
+    .query-set {
+      position: relative;
+      min-height: 1000px;  
+    }
+    .query-titles {
+      float: left;
+      margin-left: 5%;
+    }
+    .stories {
+      margin-left: 50%;
+    }
+    .query-fixed {
+      position: fixed;
+      top: 10px;
+    }
+    .query-bottom {
+      position: absolute;
+      bottom: 5px;
+    }
   </style>
 </head>
 <body>
 
-<div class="ui container">
+<div class="ui container" id="top">
   <div id="menu" class="ui inverted menu">
     <a class="header item" href="/">
       IR 2015 Online Tagging System
@@ -49,28 +73,28 @@
       {{ $user->sid }}
     </a>
   </div>
-</div>
-<form class="ui container" id="content" action="/{{$user->sid}}" method="post">
-  <input type="hidden" name="_token" value="{{ csrf_token() }}" />
-
   <div class="ui progress indicating {{ $is_finished ? "success" : "warning" }}">
     <div class="bar" style="width: {{ $percentage }}%;">
       <div class="progress"></div>
     </div>
     <div class="label"> Progress: {{$progress['finished']}} / {{$progress['total']}} </div>
   </div>
-
   <h1 class='header'>{{ $user->sid }}</h1>
   <div> {{ $msg or '' }} </div>
+
+</div>
+<form class="ui fluid container" id="content" action="/{{$user->sid}}" method="post">
+  <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+
   
   @foreach( $tasks as $qid => $task )
-  <div class="ui divider"></div>
-  <div class="ui grid">
-    <div class="eight wide column query-titles">
+  <div class="query-set">
+    <div class="ui divider"></div>
+    <div class="query-titles">
         <h2 class="ui header"> Query &#35;{{$qid}} </h2>
         <div class="query-title ui labels query-title query-{{$qid}}">
           @foreach( $queries[$qid] as $story )
-            <a class="ui large label" data-target="#qs-{{$story->id}}"> {{ $story->title }} </a>
+            <a class="ui big brown label" data-target="#qs-{{$story->id}}"> {{ $story->title }} </a>
           @endforeach
         </div>
         <div class="query-stories ui segment query-stories query-{{$qid}}">
@@ -80,10 +104,10 @@
           @endforeach
         </div>
     </div>
-    <div class="eight wide column query-titles">
-        <h2 class="ui header"> Relevant Doc Candidates </h2>
+    <div class="stories">
+        <h2 class="ui header"> Relevant Doc Candidates for Query #{{$qid}} </h2>
         @foreach( $task as $result ) 
-          <div class="ui segment news-story query-{{$qid}}">
+          <div class="ui teal segment news-story query-{{$qid}}">
 
             <h2 class="ui header"> {{ $result->story->title }} </h2>
             <p class="story-content"> {{ $result->story->text }} </p>
@@ -115,6 +139,7 @@ function select_query (id){
   $(".query-stories, .news-story, #query-titles .query-title").hide();
   $("."+id).show();
 }
+
 jQuery.fn.scrollTo = function($elem) { 
   var $this = $(this)
   $this.animate( {
@@ -138,6 +163,53 @@ $( function(){
   $(".query-title a").on("click", function(){
     var $target = $( $(this).data('target') )
     $target.parent().scrollTo( $target )
+  })
+
+  var query_set_height = []
+  $(".query-set").each( function(){
+    var $this = $(this)
+    query_set_height.push( { 
+      ele: $this.find(".query-titles"), 
+      top: function(){ return $this.offset().top },
+      bottom: function(){ return $this.offset().top + $this.height() }
+    } )
+  })
+
+  //console.log(query_set_height)
+
+
+  $( document ).on("scroll", function(e){
+    var top = $(this).scrollTop()
+    var ele
+    //console.log( top )
+
+
+    for( var i = 0; i < query_set_height.length; i++ ){
+      if( query_set_height[i].top() > top ) { 
+        for( var j = i; j < query_set_height.length; j++ ){
+          query_set_height[j].ele.removeClass("query-fixed").removeClass("query-bottom");
+        }
+        i--; 
+        break; 
+      }else{
+        query_set_height[i].ele.removeClass("query-fixed").removeClass("query-bottom");
+      }
+    }
+
+    if( i == query_set_height.length ) i--;
+
+    if( i >= 0 && i < query_set_height.length ){
+      var $ele = query_set_height[i].ele
+      //console.log( $ele.find("h2").html() )
+
+      if( top + $ele.height() > query_set_height[i].bottom()  ){
+        $ele.removeClass("query-fixed");
+        $ele.addClass("query-bottom");
+      }else{
+        $ele.addClass("query-fixed");
+        $ele.removeClass("query-bottom");
+      }
+    }
   })
 
   //$selectors.eq(0).trigger('click')
