@@ -20,7 +20,7 @@ class PoolResult extends Model
     public function get_user_sid(){
       $u = $this->user;
 
-      if ( $u ) return $u->sid;
+      if ( $u && $u->is_enabled != "0" ) return $u->sid;
       else return null;
     }
 }

@@ -59,7 +59,7 @@ class IndexController extends Controller
     public function student(Request $req, $id){
       $user = \App\User::where('sid', $id )->first();
 
-      if ( $user === null ){
+      if ( $user == null || $user->is_enabled == 0 ){
         return view('test', [
           'error' => $id,
           'sid'   => $id,

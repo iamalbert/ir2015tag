@@ -33,7 +33,7 @@
 
     <div class="ui error message">
       <div class="header">Action Forbidden</div>
-      <p> {{ $sid or '' }} not in database</p>
+      <p> {{ $sid or '' }} is not in database or is disabled</p>
     </div>
 
     <div class="ui stacked segment">
